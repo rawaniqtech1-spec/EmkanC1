@@ -8,6 +8,9 @@ interface FrameSequenceOptions {
   prefix: string;
   extension: string;
   padLength: number;
+  // When false, the hook won't subscribe to scroll — caller drives frames
+  // manually via the returned `drawFrame(index)`. Used by mobile auto-play.
+  enableScrollDriven?: boolean;
 }
 
 interface NetworkInfo {
@@ -196,6 +199,7 @@ export function useFrameSequence(
   // burn CPU on every scroll tick after the user has scrolled past the canvas.
   useEffect(() => {
     if (!firstFrameLoaded || staticFallback) return;
+    if (options.enableScrollDriven === false) return; // caller drives manually
     const section = sectionRef.current;
     if (!section) return;
 
@@ -238,7 +242,7 @@ export function useFrameSequence(
       window.removeEventListener('scroll', handleScroll);
       observer.disconnect();
     };
-  }, [firstFrameLoaded, staticFallback, sectionRef, options.frameCount, drawFrame]);
+  }, [firstFrameLoaded, staticFallback, sectionRef, options.frameCount, options.enableScrollDriven, drawFrame]);
 
   return {
     loadProgress,
@@ -246,5 +250,6 @@ export function useFrameSequence(
     firstFrameLoaded,
     staticFallback,
     currentFrame: currentFrameRef,
+    drawFrame,
   };
 }

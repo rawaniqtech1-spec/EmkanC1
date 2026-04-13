@@ -1,30 +1,101 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrameSequence } from '@/hooks/useFrameSequence';
 import { FRAME_CONFIG } from '@/lib/constants';
 
 export default function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobilePlayed, setMobilePlayed] = useState(false);
+
+  // Detect mobile once on mount. Auto-play is only used on phones because
+  // touch scroll flicks cover the whole section in one motion, which would
+  // otherwise skip through all 91 frames before the user sees any of them.
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   const {
     loadProgress,
-    isLoaded,
     firstFrameLoaded,
     staticFallback,
+    drawFrame,
   } = useFrameSequence(canvasRef, sectionRef, {
     frameCount: FRAME_CONFIG.count,
     directory: FRAME_CONFIG.directory,
     prefix: FRAME_CONFIG.prefix,
     extension: FRAME_CONFIG.extension,
     padLength: FRAME_CONFIG.padLength,
+    enableScrollDriven: !isMobile, // desktop: scroll-linked, mobile: auto-play
   });
+
+  // ── Mobile auto-play ──────────────────────────────────────────
+  // When the canvas section enters view, lock body scroll, run the full
+  // reveal over 2.8s via RAF, then unlock. Subsequent re-entries don't
+  // re-play — the final assembled-logo frame stays on screen.
+  useEffect(() => {
+    if (!isMobile || !firstFrameLoaded || staticFallback || mobilePlayed) return;
+    const section = sectionRef.current;
+    if (!section) return;
+
+    let rafId = 0;
+    let startTime = 0;
+    const duration = 2800;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio < 0.85 || mobilePlayed) return;
+        observer.disconnect();
+
+        // Lock scroll — body + html to catch iOS Safari edge case
+        const prevBodyOverflow = document.body.style.overflow;
+        const prevHtmlOverflow = document.documentElement.style.overflow;
+        const prevBodyTouch = document.body.style.touchAction;
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+
+        const totalFrames = FRAME_CONFIG.count;
+        const tick = (now: number) => {
+          if (!startTime) startTime = now;
+          const elapsed = now - startTime;
+          const p = Math.min(1, elapsed / duration);
+          // Ease-out cubic — starts fast, settles gently at the end
+          const eased = 1 - Math.pow(1 - p, 3);
+          const frameIndex = Math.min(totalFrames - 1, Math.floor(eased * totalFrames));
+          drawFrame(frameIndex);
+
+          if (p < 1) {
+            rafId = requestAnimationFrame(tick);
+          } else {
+            // Animation done — unlock and mark played
+            document.body.style.overflow = prevBodyOverflow;
+            document.documentElement.style.overflow = prevHtmlOverflow;
+            document.body.style.touchAction = prevBodyTouch;
+            setMobilePlayed(true);
+          }
+        };
+        rafId = requestAnimationFrame(tick);
+      },
+      { threshold: [0, 0.5, 0.85, 1] }
+    );
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isMobile, firstFrameLoaded, staticFallback, mobilePlayed, drawFrame]);
 
   return (
     <section
       ref={sectionRef}
-      className="h-[160vh] md:h-[340vh] lg:h-[440vh] relative section-vignette overflow-x-clip"
+      className="h-screen md:h-[340vh] lg:h-[440vh] relative section-vignette overflow-x-clip"
       style={{ backgroundColor: '#F6F2E6' }}
     >
       <div
@@ -52,21 +123,6 @@ export default function HeroCanvas() {
                   style={{ width: `${loadProgress * 100}%` }}
                 />
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Post-first-frame: subtle progress chip while the rest stream in */}
-        {firstFrameLoaded && !isLoaded && !staticFallback && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-purple/10 backdrop-blur-md border border-brand-purple/15">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-brand-teal opacity-60 animate-ping" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-teal" />
-              </span>
-              <span className="text-[10px] text-brand-purple/70 tracking-wider tabular-nums">
-                {Math.round(loadProgress * 100)}%
-              </span>
             </div>
           </div>
         )}
