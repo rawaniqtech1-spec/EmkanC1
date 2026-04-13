@@ -1,38 +1,21 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { useRef, useEffect, useState } from 'react';
 
 export default function ScrollMarquee() {
   const sectionRef = useRef<HTMLElement>(null);
-  const stripeRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    if (!sectionRef.current || !stripeRef.current) return;
+    const section = sectionRef.current;
+    if (!section) return;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        stripeRef.current,
-        { xPercent: 0 },
-        {
-          xPercent: -55,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 0.8,
-          },
-        }
-      );
-    }, sectionRef);
-
-    return () => ctx.revert();
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: '100px 0px' }
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -49,8 +32,11 @@ export default function ScrollMarquee() {
       <div className="absolute inset-y-0 right-0 w-24 md:w-40 bg-gradient-to-l from-surface-primary to-transparent pointer-events-none z-[2]" />
 
       <div
-        ref={stripeRef}
-        className="flex whitespace-nowrap will-change-transform"
+        className="flex animate-marquee whitespace-nowrap will-change-transform"
+        style={{
+          animationDuration: '4s',
+          animationPlayState: inView ? 'running' : 'paused',
+        }}
       >
         {Array.from({ length: 6 }).map((_, i) => (
           <span

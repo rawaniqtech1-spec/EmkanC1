@@ -72,11 +72,13 @@ export default function HeroCanvas() {
     prefix: FRAME_CONFIG.prefix,
     extension: FRAME_CONFIG.extension,
     padLength: FRAME_CONFIG.padLength,
-    enableScrollDriven: !isMobile,
+    enableScrollDriven: true,
   });
 
-  /* ─── Mobile auto-play with scroll lock ─────────────────── */
+  /* ─── Mobile auto-play with scroll lock (disabled — scroll-driven now) ─── */
+  const MOBILE_AUTOPLAY = false;
   useEffect(() => {
+    if (!MOBILE_AUTOPLAY) return;
     if (!isMobile || !firstFrameLoaded || staticFallback || mobilePlayed) return;
     const section = sectionRef.current;
     if (!section) return;
@@ -169,11 +171,11 @@ export default function HeroCanvas() {
   return (
     <section
       ref={sectionRef}
-      className="h-screen md:h-[180vh] lg:h-[220vh] relative overflow-x-clip"
+      className="h-[48vh] md:h-[180vh] lg:h-[220vh] relative overflow-x-clip"
       style={{ backgroundColor: 'var(--surface-primary)' }}
     >
       <div
-        className="sticky top-0 h-screen w-full overflow-hidden"
+        className="static md:sticky md:top-0 h-[48vh] md:h-screen w-full overflow-hidden"
         style={{ backgroundColor: 'var(--surface-primary)' }}
       >
         {/* ─── The canvas ─────────────────────────────── */}
@@ -185,7 +187,7 @@ export default function HeroCanvas() {
         />
 
         {/* ─── Top edge scrim + section label ─────────── */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#F7F4EE] via-[#F7F4EE]/60 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-16 md:h-32 bg-gradient-to-b from-[#F7F4EE] via-[#F7F4EE]/60 to-transparent pointer-events-none" />
 
         <div
           className={`absolute top-6 md:top-10 left-1/2 -translate-x-1/2 z-10 transition-all duration-700 ${
@@ -234,9 +236,9 @@ export default function HeroCanvas() {
         </div>
 
         {/* ─── Bottom scrim + chapter text overlay ────── */}
-        <div className="absolute bottom-0 left-0 right-0 h-64 md:h-72 bg-gradient-to-t from-[#F7F4EE] via-[#F7F4EE]/85 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 md:h-72 bg-gradient-to-t from-[#F7F4EE] via-[#F7F4EE]/85 to-transparent pointer-events-none" />
 
-        <div className="absolute bottom-12 md:bottom-16 left-0 right-0 z-10 px-6 md:px-12 pointer-events-none">
+        <div className="absolute bottom-6 md:bottom-16 left-0 right-0 z-10 px-6 md:px-12 pointer-events-none">
           <div className="max-w-[720px] mx-auto text-center">
             {/* Key forces remount on chapter change for a clean fade/slide */}
             <div key={activeChapter} className="animate-fade-slide-up">

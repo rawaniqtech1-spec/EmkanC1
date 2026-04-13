@@ -194,15 +194,15 @@ export default function Footer() {
               aria-label="الصفحة الرئيسية"
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-brand-teal/30 rounded-xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-brand-teal/30 rounded-lg blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
                 <Image
                   src="/images/logo-icon.jpg"
                   alt="شعار إمكان المستقبل"
-                  width={60}
-                  height={60}
+                  width={44}
+                  height={44}
                   loading="lazy"
-                  quality={75}
-                  className="relative rounded-xl brightness-0 invert opacity-85 group-hover:opacity-100 transition-opacity duration-300"
+                  quality={80}
+                  className="relative rounded-lg transition-transform duration-500 group-hover:scale-95"
                 />
               </div>
               <div>

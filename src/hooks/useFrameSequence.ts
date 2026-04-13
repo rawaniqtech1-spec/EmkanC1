@@ -131,13 +131,15 @@ export function useFrameSequence(
       let drawW: number, drawH: number;
 
       if (isMobile) {
-        // Cover-fit so the landscape video fills the portrait viewport
+        // Contain-fit on mobile so the full landscape frame stays inside the
+        // portrait viewport (no horizontal crop of the 3D letters).
+        const scale = 0.98;
         if (canvasRatio > imgRatio) {
-          drawW = cssW;
-          drawH = cssW / imgRatio;
+          drawH = cssH * scale;
+          drawW = drawH * imgRatio;
         } else {
-          drawH = cssH;
-          drawW = cssH * imgRatio;
+          drawW = cssW * scale;
+          drawH = drawW / imgRatio;
         }
       } else {
         // Contain-fit at 94% for breathing room on desktop
@@ -169,8 +171,9 @@ export function useFrameSequence(
     function resize() {
       if (!canvas) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const cssW = window.innerWidth;
-      const cssH = window.innerHeight;
+      const parent = canvas.parentElement;
+      const cssW = parent ? parent.clientWidth : window.innerWidth;
+      const cssH = parent ? parent.clientHeight : window.innerHeight;
       canvas.style.width = `${cssW}px`;
       canvas.style.height = `${cssH}px`;
       canvas.width = Math.round(cssW * dpr);
@@ -214,17 +217,33 @@ export function useFrameSequence(
       requestAnimationFrame(() => {
         if (!section) { ticking = false; return; }
         const rect = section.getBoundingClientRect();
-        const scrollableHeight = section.offsetHeight - window.innerHeight;
-        if (scrollableHeight > 0) {
-          const progress = Math.min(1, Math.max(0, -rect.top / scrollableHeight));
-          const frameIndex = Math.min(
-            options.frameCount - 1,
-            Math.floor(progress * options.frameCount)
-          );
-          if (frameIndex !== currentFrameRef.current && frameIndex >= 0) {
-            currentFrameRef.current = frameIndex;
-            drawFrame(frameIndex);
-          }
+        const canvasEl = canvasRef.current;
+        const pinHeight = canvasEl?.parentElement?.clientHeight ?? window.innerHeight;
+        const scrollableHeight = section.offsetHeight - pinHeight;
+
+        let progress: number;
+        if (scrollableHeight > 50) {
+          // Sticky mode: section meaningfully taller than pin (desktop). Frames
+          // map to the pinned scroll range — progress 0 at rect.top=0, 1 when
+          // sticky releases.
+          progress = Math.min(1, Math.max(0, -rect.top / scrollableHeight));
+        } else {
+          // Travel mode: section is compact (mobile). Frames advance while the
+          // section travels through the viewport, so the animation spans the
+          // natural scroll-through without a pinned dead zone.
+          const viewportH = window.innerHeight;
+          const totalTravel = viewportH + section.offsetHeight;
+          const scrolled = viewportH - rect.top;
+          progress = Math.min(1, Math.max(0, scrolled / totalTravel));
+        }
+
+        const frameIndex = Math.min(
+          options.frameCount - 1,
+          Math.floor(progress * options.frameCount)
+        );
+        if (frameIndex !== currentFrameRef.current && frameIndex >= 0) {
+          currentFrameRef.current = frameIndex;
+          drawFrame(frameIndex);
         }
         ticking = false;
       });
