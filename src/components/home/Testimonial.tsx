@@ -75,8 +75,6 @@ export default function Testimonial() {
       <div className="absolute -bottom-20 -left-20 w-[300px] h-[300px] rounded-full border border-brand-purple/[0.04] hidden md:block" />
       {/* Gradient glow center */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[300px] bg-brand-teal/[0.03] rounded-full blur-[120px]" />
-      {/* Top line */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-[var(--border-subtle)] to-transparent" />
       {/* Background decoration */}
       <div className="absolute top-10 right-4 sm:right-10 text-[100px] sm:text-[200px] font-display text-brand-teal/[0.06] leading-none pointer-events-none select-none animate-float-slow">
         &ldquo;

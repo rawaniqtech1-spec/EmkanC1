@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/* Dark variant activates on descendants of `.dark` EXCEPT inside `.force-light`
+   islands — those re-declare CSS variables to light values and turn off the
+   dark: variant entirely so the block looks fully light even when the page
+   root is `.dark`. */
+@custom-variant dark (&:where(.dark, .dark *):not(.force-light, .force-light *));
 
 :root {
   /* Only 3 brand colors: purple, teal, white */
@@ -17,9 +21,11 @@
   --brand-text: #3B2C59;
   --brand-text-muted: #6B6085;
 
-  /* Surfaces — warm off-white, مريحة للعين */
+  /* Surfaces — warm off-white, مريحة للعين.
+     Primary + secondary are INTENTIONALLY identical so there's zero visible
+     seam between sections. Variation comes from content and decor, not color. */
   --surface-primary: #F7F4EE;
-  --surface-secondary: #F2EEE6;
+  --surface-secondary: #F7F4EE;
   --surface-elevated: #FBF9F4;
   --surface-card: #FBF9F4;
   --surface-nav: rgba(251, 249, 244, 0.96);
@@ -35,15 +41,41 @@
   --glass-border: rgba(59, 44, 89, 0.08);
 }
 
+/* Light-mode island override — when a subtree is marked .force-light,
+   redeclare all CSS variables to their light-mode values. Combined with the
+   `:not(.force-light, .force-light *)` clause on the dark variant above,
+   any Tailwind `dark:` class inside a .force-light subtree is disabled and
+   the non-dark classes take over. Net effect: the block looks fully light
+   regardless of the root theme. */
+.force-light {
+  --brand-cream: #F7F4EE;
+  --brand-white: #FFFFFF;
+  --brand-text: #3B2C59;
+  --brand-text-muted: #6B6085;
+  --surface-primary: #F7F4EE;
+  --surface-secondary: #F7F4EE;
+  --surface-elevated: #FBF9F4;
+  --surface-card: #FBF9F4;
+  --surface-nav: rgba(251, 249, 244, 0.96);
+  --surface-input: #FBF9F4;
+  --border-subtle: rgba(59, 44, 89, 0.08);
+  --border-default: rgba(59, 44, 89, 0.12);
+  --border-hover: #3B2C59;
+  --glass-bg: rgba(251, 249, 244, 0.92);
+  --glass-border: rgba(59, 44, 89, 0.08);
+}
+
 .dark {
   --brand-cream: #3B2C59;
   --brand-white: #2A1E42;
   --brand-text: #FFFFFF;
   --brand-text-muted: #C4BCD4;
 
-  /* Surfaces — dark purple */
+  /* Surfaces — dark purple. Primary + secondary are INTENTIONALLY identical
+     so there's zero seam between sections. Elevated + card stay brighter
+     for lifted UI elements. */
   --surface-primary: #1E1535;
-  --surface-secondary: #251C3D;
+  --surface-secondary: #1E1535;
   --surface-elevated: #2D2245;
   --surface-card: #251C3D;
   --surface-nav: rgba(30, 21, 53, 0.95);
@@ -122,9 +154,10 @@ html {
   scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* iOS Safari treats html as the scroll container, so overflow-x on body
-     alone does NOT prevent horizontal pan. Both layers must clamp. */
-  overflow-x: hidden;
+  /* overflow-x: clip (not hidden) — prevents horizontal pan WITHOUT
+     creating a scroll container that would break position: sticky on
+     descendants (known CSS gotcha). */
+  overflow-x: clip;
   max-width: 100vw;
 }
 
@@ -132,9 +165,8 @@ body {
   font-family: var(--font-body), 'IBM Plex Sans Arabic', sans-serif;
   background: #FFFFFF;
   color: var(--brand-text);
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
-  position: relative;
   line-height: 1.8;
 }
 

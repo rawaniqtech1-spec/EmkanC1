@@ -104,11 +104,9 @@ export default function JourneySection() {
   }, []);
 
   return (
-    <section className="py-12 md:py-20 lg:py-28 px-4 sm:px-6 md:px-12 bg-surface-primary relative overflow-hidden">
+    <section className="force-light py-12 md:py-20 lg:py-28 px-4 sm:px-6 md:px-12 bg-surface-primary relative overflow-hidden">
       {/* Gradient bottom-left blob */}
       <div className="absolute -bottom-20 -left-20 w-[350px] h-[350px] bg-brand-purple/[0.03] rounded-full blur-[100px]" />
-      {/* Top separator line */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-[var(--border-subtle)] to-transparent" />
       {/* Dotted arc */}
       <div className="absolute top-20 right-10 w-[200px] h-[200px] rounded-full border border-dashed border-brand-teal/[0.06] hidden md:block" />
       {/* Brand-inspired decorative elements — sound wave bars — now floating */}

@@ -44,7 +44,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{const t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`,
+            __html: `try{const t=localStorage.getItem('theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}`,
           }}
         />
       </head>
@@ -58,7 +58,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-x-clip">{children}</main>
             <Footer />
             <ScrollToTop />
-            <WhatsAppButton phone="+966 XX XXX XXXX" />
+            <WhatsAppButton href="https://wa.me/message/W5KUC55DRXQHG1" />
           </LenisProvider>
         </ThemeProvider>
       </body>

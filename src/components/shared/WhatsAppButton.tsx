@@ -2,23 +2,29 @@
 
 import { useState, useEffect } from 'react';
 
-export default function WhatsAppButton({ phone = '+966XXXXXXXXX' }: { phone?: string }) {
+type WhatsAppButtonProps = { href?: string; phone?: string };
+
+export default function WhatsAppButton({ href, phone }: WhatsAppButtonProps) {
   const [visible, setVisible] = useState(false);
   const [pulse, setPulse] = useState(true);
 
   useEffect(() => {
-    // Show after a short delay
     const timer = setTimeout(() => setVisible(true), 2000);
-    // Stop pulsing after 10 seconds
     const pulseTimer = setTimeout(() => setPulse(false), 12000);
     return () => { clearTimeout(timer); clearTimeout(pulseTimer); };
   }, []);
 
-  const cleanPhone = phone.replace(/\s+/g, '').replace('+', '');
+  // If a direct WhatsApp link is passed, use it as-is (e.g. wa.me/message/<code>).
+  // Otherwise build a wa.me/<phone>?text=... link.
+  const link = href
+    ? href
+    : `https://wa.me/${(phone ?? '').replace(/[\s+]/g, '')}?text=${encodeURIComponent(
+        'مرحباً، أريد الاستفسار عن خدمات مركز إمكان المستقبل'
+      )}`;
 
   return (
     <a
-      href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent('مرحباً، أريد الاستفسار عن خدمات مركز إمكان المستقبل')}`}
+      href={link}
       target="_blank"
       rel="noopener noreferrer"
       className={`fixed bottom-6 right-6 z-50 group transition-all duration-700 ${

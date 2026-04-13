@@ -4,15 +4,58 @@ import { useRef, useEffect, useState } from 'react';
 import { useFrameSequence } from '@/hooks/useFrameSequence';
 import { FRAME_CONFIG } from '@/lib/constants';
 
+/* ─────────────────────── Chapters ─────────────────────── */
+// Three-act reveal synced to the 91-frame brand animation:
+//   01 [frames  0-30] — anticipation: scattered pieces, before form
+//   02 [frames 30-63] — assembly: pieces find their place
+//   03 [frames 63-91] — arrival: the logo is whole, the message breathes
+// Chapter text overlays fade in/out with the scroll (or auto-play) progress.
+const CHAPTERS = [
+  {
+    number: '٠١',
+    label: 'البداية',
+    title: 'لكل طفل إمكان',
+    subtitle: 'نؤمن أن في داخل كل طفل قدرات كامنة تنتظر من يكتشفها',
+    range: [0, 30] as const,
+  },
+  {
+    number: '٠٢',
+    label: 'الرحلة',
+    title: 'نرعاه ونُطلقه',
+    subtitle: 'خطوة بعد خطوة، نبني الثقة ونوقظ الإمكانات',
+    range: [30, 63] as const,
+  },
+  {
+    number: '٠٣',
+    label: 'الهدف',
+    title: 'معًا نصنع المستقبل',
+    subtitle: 'رحلة تطوير متكاملة تصنع فرقًا حقيقيًا في حياة كل أسرة',
+    range: [63, 91] as const,
+  },
+] as const;
+
+function chapterIndexFor(frame: number) {
+  for (let i = 0; i < CHAPTERS.length; i++) {
+    const [from, to] = CHAPTERS[i].range;
+    if (frame >= from && frame < to) return i;
+  }
+  return CHAPTERS.length - 1;
+}
+
+/* ─────────────────────── Component ─────────────────────── */
 export default function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+
   const [isMobile, setIsMobile] = useState(false);
   const [mobilePlayed, setMobilePlayed] = useState(false);
+  const [activeChapter, setActiveChapter] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [revealStarted, setRevealStarted] = useState(false);
 
-  // Detect mobile once on mount. Auto-play is only used on phones because
-  // touch scroll flicks cover the whole section in one motion, which would
-  // otherwise skip through all 91 frames before the user sees any of them.
+  // Detect mobile once on mount. Auto-play mode only runs on phones because
+  // touch-flick scroll covers the whole section in one motion, which would
+  // otherwise skip through all 91 frames before any could paint.
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
@@ -21,6 +64,7 @@ export default function HeroCanvas() {
     loadProgress,
     firstFrameLoaded,
     staticFallback,
+    currentFrame,
     drawFrame,
   } = useFrameSequence(canvasRef, sectionRef, {
     frameCount: FRAME_CONFIG.count,
@@ -28,13 +72,10 @@ export default function HeroCanvas() {
     prefix: FRAME_CONFIG.prefix,
     extension: FRAME_CONFIG.extension,
     padLength: FRAME_CONFIG.padLength,
-    enableScrollDriven: !isMobile, // desktop: scroll-linked, mobile: auto-play
+    enableScrollDriven: !isMobile,
   });
 
-  // ── Mobile auto-play ──────────────────────────────────────────
-  // When the canvas section enters view, lock body scroll, run the full
-  // reveal over 2.8s via RAF, then unlock. Subsequent re-entries don't
-  // re-play — the final assembled-logo frame stays on screen.
+  /* ─── Mobile auto-play with scroll lock ─────────────────── */
   useEffect(() => {
     if (!isMobile || !firstFrameLoaded || staticFallback || mobilePlayed) return;
     const section = sectionRef.current;
@@ -46,13 +87,12 @@ export default function HeroCanvas() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.intersectionRatio < 0.85 || mobilePlayed) return;
+        if (entry.intersectionRatio < 0.8 || mobilePlayed) return;
         observer.disconnect();
 
-        // Lock scroll — body + html to catch iOS Safari edge case
         const prevBodyOverflow = document.body.style.overflow;
         const prevHtmlOverflow = document.documentElement.style.overflow;
-        const prevBodyTouch = document.body.style.touchAction;
+        const prevTouch = document.body.style.touchAction;
         document.body.style.overflow = 'hidden';
         document.documentElement.style.overflow = 'hidden';
         document.body.style.touchAction = 'none';
@@ -62,24 +102,24 @@ export default function HeroCanvas() {
           if (!startTime) startTime = now;
           const elapsed = now - startTime;
           const p = Math.min(1, elapsed / duration);
-          // Ease-out cubic — starts fast, settles gently at the end
+          // Ease-out cubic — starts brisk, settles with weight
           const eased = 1 - Math.pow(1 - p, 3);
           const frameIndex = Math.min(totalFrames - 1, Math.floor(eased * totalFrames));
           drawFrame(frameIndex);
+          currentFrame.current = frameIndex;
 
           if (p < 1) {
             rafId = requestAnimationFrame(tick);
           } else {
-            // Animation done — unlock and mark played
             document.body.style.overflow = prevBodyOverflow;
             document.documentElement.style.overflow = prevHtmlOverflow;
-            document.body.style.touchAction = prevBodyTouch;
+            document.body.style.touchAction = prevTouch;
             setMobilePlayed(true);
           }
         };
         rafId = requestAnimationFrame(tick);
       },
-      { threshold: [0, 0.5, 0.85, 1] }
+      { threshold: [0, 0.5, 0.8, 1] }
     );
     observer.observe(section);
 
@@ -90,39 +130,195 @@ export default function HeroCanvas() {
       document.documentElement.style.overflow = '';
       document.body.style.touchAction = '';
     };
-  }, [isMobile, firstFrameLoaded, staticFallback, mobilePlayed, drawFrame]);
+  }, [isMobile, firstFrameLoaded, staticFallback, mobilePlayed, drawFrame, currentFrame]);
+
+  /* ─── Poll currentFrame → derive progress, chapter, revealStarted ─── */
+  useEffect(() => {
+    if (!firstFrameLoaded) return;
+    let rafId = 0;
+    let lastChapter = -1;
+    let lastProgress = -1;
+
+    const tick = () => {
+      const frame = currentFrame.current < 0 ? 0 : currentFrame.current;
+      const pct = frame / (FRAME_CONFIG.count - 1);
+
+      // Update progress only when it changes by more than 0.5% — fewer re-renders
+      if (Math.abs(pct - lastProgress) > 0.005) {
+        setProgress(pct);
+        lastProgress = pct;
+      }
+
+      const chapter = chapterIndexFor(frame);
+      if (chapter !== lastChapter) {
+        setActiveChapter(chapter);
+        lastChapter = chapter;
+      }
+
+      // Fade out the scroll hint once the reveal has actually begun
+      if (frame > 3) setRevealStarted(true);
+
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [firstFrameLoaded, currentFrame]);
+
+  const current = CHAPTERS[activeChapter];
 
   return (
     <section
       ref={sectionRef}
-      className="h-screen md:h-[340vh] lg:h-[440vh] relative section-vignette overflow-x-clip"
-      style={{ backgroundColor: '#F6F2E6' }}
+      className="h-screen md:h-[180vh] lg:h-[220vh] relative overflow-x-clip"
+      style={{ backgroundColor: 'var(--surface-primary)' }}
     >
       <div
         className="sticky top-0 h-screen w-full overflow-hidden"
-        style={{ backgroundColor: '#F6F2E6' }}
+        style={{ backgroundColor: 'var(--surface-primary)' }}
       >
-        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+        {/* ─── The canvas ─────────────────────────────── */}
+        <canvas
+          ref={canvasRef}
+          className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${
+            firstFrameLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
 
-        {/* Pre-first-frame loader — hides as soon as frame 1 paints */}
+        {/* ─── Top edge scrim + section label ─────────── */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#F7F4EE] via-[#F7F4EE]/60 to-transparent pointer-events-none" />
+
+        <div
+          className={`absolute top-6 md:top-10 left-1/2 -translate-x-1/2 z-10 transition-all duration-700 ${
+            firstFrameLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+          }`}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-purple/8 backdrop-blur-md border border-brand-purple/15">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-brand-teal opacity-60 animate-ping" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-teal" />
+            </span>
+            <span className="text-[11px] md:text-xs font-medium text-brand-purple tracking-[0.25em] uppercase">
+              رحلة إمكان
+            </span>
+          </div>
+        </div>
+
+        {/* ─── Chapter number pills on the right (RTL) ─── */}
+        <div className="absolute top-1/2 right-4 md:right-8 -translate-y-1/2 z-10 hidden sm:flex flex-col gap-3 pointer-events-none">
+          {CHAPTERS.map((c, i) => {
+            const isActive = i === activeChapter;
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-2 justify-end transition-all duration-500 ${
+                  isActive ? 'opacity-100' : 'opacity-35'
+                }`}
+              >
+                <span
+                  className={`text-[10px] font-display tabular-nums tracking-wider transition-colors duration-500 ${
+                    isActive ? 'text-brand-purple' : 'text-brand-purple/50'
+                  }`}
+                >
+                  {c.number}
+                </span>
+                <span
+                  className={`block rounded-full transition-all duration-500 ${
+                    isActive
+                      ? 'w-1.5 h-6 bg-brand-teal'
+                      : 'w-1.5 h-1.5 bg-brand-purple/30'
+                  }`}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ─── Bottom scrim + chapter text overlay ────── */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 md:h-72 bg-gradient-to-t from-[#F7F4EE] via-[#F7F4EE]/85 to-transparent pointer-events-none" />
+
+        <div className="absolute bottom-12 md:bottom-16 left-0 right-0 z-10 px-6 md:px-12 pointer-events-none">
+          <div className="max-w-[720px] mx-auto text-center">
+            {/* Key forces remount on chapter change for a clean fade/slide */}
+            <div key={activeChapter} className="animate-fade-slide-up">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <span className="block w-6 h-[1px] bg-brand-teal/60" />
+                <span className="text-[10px] md:text-xs font-medium text-brand-teal tracking-[0.3em] uppercase">
+                  {current.label}
+                </span>
+                <span className="block w-6 h-[1px] bg-brand-teal/60" />
+              </div>
+
+              <h2 className="font-display font-bold text-2xl sm:text-3xl md:text-5xl text-brand-purple mb-2 md:mb-3 leading-tight">
+                {current.title}
+              </h2>
+
+              <p className="text-[13px] sm:text-sm md:text-base text-brand-text-muted leading-relaxed max-w-md mx-auto">
+                {current.subtitle}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Progress bar at the very bottom ────────── */}
+        <div className="absolute bottom-5 md:bottom-6 left-0 right-0 z-10 pointer-events-none">
+          <div className="max-w-[720px] mx-auto px-6 md:px-12">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-display tabular-nums text-brand-purple/50">
+                {String(activeChapter + 1).padStart(2, '0')}
+              </span>
+              <div className="flex-1 h-[2px] bg-brand-purple/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-l from-brand-teal to-brand-teal-light rounded-full transition-[width] duration-150 ease-out"
+                  style={{ width: `${progress * 100}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-display tabular-nums text-brand-purple/50">
+                {String(CHAPTERS.length).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Scroll hint — fades out once the reveal starts ─── */}
+        <div
+          className={`absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none hidden md:flex flex-col items-center gap-1 transition-all duration-500 ${
+            revealStarted ? 'opacity-0 translate-y-2' : 'opacity-60 translate-y-0'
+          }`}
+        >
+          <span className="text-[9px] text-brand-purple/60 tracking-[0.25em] uppercase">
+            مرّر
+          </span>
+          <span className="block w-[1px] h-4 bg-brand-purple/30 animate-breathe origin-top" />
+        </div>
+
+        {/* ─── Premium loader (pre-first-frame only) ─────── */}
         {!firstFrameLoaded && (
           <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ backgroundColor: '#F6F2E6' }}
+            className="absolute inset-0 z-20 flex items-center justify-center"
+            style={{ backgroundColor: 'var(--surface-primary)' }}
           >
             <div className="text-center px-6">
-              <div className="font-display font-bold text-2xl md:text-3xl text-brand-purple mb-2">
+              {/* Pulsing orbit */}
+              <div className="relative w-14 h-14 mx-auto mb-6">
+                <span className="absolute inset-0 rounded-full border border-brand-teal/40 animate-ping" />
+                <span className="absolute inset-2 rounded-full border border-brand-purple/20" />
+                <span className="absolute inset-[22px] rounded-full bg-brand-teal" />
+              </div>
+              <div className="font-display font-bold text-xl md:text-2xl text-brand-purple mb-1.5">
                 إمكان المستقبل
               </div>
-              <p className="text-brand-text-muted text-xs md:text-sm mb-6">
+              <p className="text-brand-text-muted text-[11px] md:text-xs tracking-wider mb-5">
                 جاري تحميل التجربة
               </p>
-              <div className="w-44 md:w-48 h-[2px] bg-brand-purple/10 mx-auto overflow-hidden rounded-full">
+              <div className="w-40 md:w-48 h-[2px] bg-brand-purple/10 mx-auto overflow-hidden rounded-full">
                 <div
-                  className="h-full bg-brand-teal transition-all duration-300 rounded-full"
+                  className="h-full bg-gradient-to-l from-brand-teal to-brand-teal-light transition-all duration-300 rounded-full"
                   style={{ width: `${loadProgress * 100}%` }}
                 />
               </div>
+              <p className="text-[10px] font-display tabular-nums text-brand-teal mt-2.5">
+                {String(Math.round(loadProgress * 100)).padStart(3, '0')}%
+              </p>
             </div>
           </div>
         )}

@@ -147,8 +147,8 @@ function QuickContactStrip() {
     {
       icon: <IconChat size={22} />,
       label: 'راسلنا على واتساب',
-      value: content.contact.info.whatsapp,
-      href: `https://wa.me/${content.contact.info.whatsapp.replace(/[\s+]/g, '')}`,
+      value: 'WhatsApp',
+      href: content.contact.info.whatsapp,
       accent: 'green' as const,
       note: 'متاح ٢٤/٧',
     },
@@ -334,14 +334,20 @@ function ContactContent() {
           <div className="info-card rounded-xl p-5 bg-surface-secondary border border-[var(--border-subtle)]">
             <p className="text-xs text-brand-text-muted mb-3">تابعنا على</p>
             <div className="flex items-center gap-3">
-              {['instagram', 'twitter', 'linkedin', 'youtube'].map((s) => (
+              {[
+                { name: 'instagram', href: content.contact.info.instagram, label: 'Instagram' },
+                { name: 'tiktok', href: content.contact.info.tiktok, label: 'TikTok' },
+                { name: 'linktree', href: content.contact.info.linktree, label: 'Linktree' },
+              ].map((s) => (
                 <a
-                  key={s}
-                  href="#"
-                  aria-label={s}
+                  key={s.name}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
                   className="w-11 h-11 rounded-xl bg-surface-card border border-[var(--border-default)] flex items-center justify-center text-brand-text-muted hover:text-brand-teal hover:border-brand-teal hover:-translate-y-0.5 transition-all duration-300"
                 >
-                  <SocialDot name={s} />
+                  <SocialDot name={s.name} />
                 </a>
               ))}
             </div>
@@ -361,19 +367,14 @@ function SocialDot({ name }: { name: string }) {
         <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
       </svg>
     ),
-    twitter: (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    tiktok: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005.8 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1.84-.1z" />
       </svg>
     ),
-    linkedin: (
+    linktree: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.268 2.37 4.268 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-      </svg>
-    ),
-    youtube: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+        <path d="M13.736 5.853L17.834 1.59l2.341 2.388-4.308 4.057H22v3.28h-6.14l4.315 4.066-2.344 2.309-6.428-6.452-6.427 6.452-2.344-2.309 4.315-4.066H0v-3.28h6.133L1.825 3.978 4.166 1.59l4.098 4.263V0h5.472v5.853zM8.264 14.834h5.472V24H8.264v-9.166z" />
       </svg>
     ),
   };
@@ -548,7 +549,7 @@ function ContactForm() {
             value={fields.phone}
             onChange={handleChange('phone')}
             className={`${inputClasses(errors.phone)} text-left`}
-            placeholder="+966 5X XXX XXXX"
+            placeholder="+966 57 970 3017"
             autoComplete="tel"
           />
           {errors.phone && <p className="text-xs text-red-500 mt-1.5">{errors.phone}</p>}
@@ -892,7 +893,7 @@ function ContactBottomCTA() {
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
           <Button
-            href={`https://wa.me/${content.contact.info.whatsapp.replace(/[\s+]/g, '')}`}
+            href={content.contact.info.whatsapp}
             size="lg"
           >
             احجز استشارة مجانية

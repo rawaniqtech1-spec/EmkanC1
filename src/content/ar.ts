@@ -237,10 +237,14 @@ export const content = {
       },
     },
     info: {
-      phone: '+966 XX XXX XXXX',
-      email: 'info@futureemkan.com',
+      phone: '+966 57 970 3017',
+      email: 'Emkanspeech@gmail.com',
       address: 'الرياض، المملكة العربية السعودية',
-      whatsapp: '+966 XX XXX XXXX',
+      whatsapp: 'https://wa.me/message/W5KUC55DRXQHG1',
+      instagram: 'https://www.instagram.com/emkanspeech',
+      tiktok: 'https://www.tiktok.com/@emkanspeech',
+      linktree: 'https://linktr.ee/emkanspeech',
+      commercialRegistration: '7049341493',
     },
     hours: {
       title: 'ساعات العمل',

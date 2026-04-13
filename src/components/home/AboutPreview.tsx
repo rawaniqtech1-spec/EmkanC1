@@ -64,8 +64,6 @@ export default function AboutPreview() {
       {/* Decorative gradient blob top-right */}
       <div className="absolute -top-20 -right-20 w-[300px] h-[300px] bg-brand-teal/[0.04] rounded-full blur-[80px]" />
       <SoundWaveBars color="purple" size="sm" className="absolute top-12 left-8 opacity-[0.18] animate-float hidden md:flex" />
-      {/* Diagonal line accent */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-[var(--border-subtle)] to-transparent" />
       <div ref={sectionRef} className="relative z-[2] max-w-[1100px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-6 sm:gap-10 md:gap-16 items-center">
           <div>

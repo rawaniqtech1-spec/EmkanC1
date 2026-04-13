@@ -119,8 +119,10 @@ export function useFrameSequence(
       const cssW = canvas.clientWidth;
       const cssH = canvas.clientHeight;
 
-      // Fill with the video's final-frame background
-      ctx.fillStyle = '#F6F2E6';
+      // Fill with the unified site background so the canvas section blends
+      // seamlessly into its neighbors. The HeroCanvas top/bottom scrims hide
+      // the slightly-warmer video rim at the edges.
+      ctx.fillStyle = '#F7F4EE';
       ctx.fillRect(0, 0, cssW, cssH);
 
       const imgRatio = img.naturalWidth / img.naturalHeight;

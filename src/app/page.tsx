@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic';
 import HeroSection from '@/components/home/HeroSection';
-import Marquee from '@/components/shared/Marquee';
 import {
   SoundWaveRow,
   SwooshCurve,
@@ -16,7 +15,7 @@ const JourneySection = dynamic(() => import('@/components/home/JourneySection'))
 const StatsCounter = dynamic(() => import('@/components/home/StatsCounter'));
 const TrustLogos = dynamic(() => import('@/components/home/TrustLogos'));
 const Testimonial = dynamic(() => import('@/components/home/Testimonial'));
-const CTABanner = dynamic(() => import('@/components/home/CTABanner'));
+const ScrollMarquee = dynamic(() => import('@/components/home/ScrollMarquee'));
 
 const MARQUEE_ITEMS = [
   'علاج النطق',
@@ -44,7 +43,7 @@ export default function Home() {
       </div>
 
       {/* 2. Moving services strip */}
-      <section className="py-6 md:py-8 bg-surface-primary border-b border-[var(--border-subtle)] overflow-hidden">
+      <section className="py-6 md:py-8 bg-surface-primary overflow-hidden">
         <div className="flex animate-marquee hover:[animation-play-state:paused]" style={{ animationDuration: '40s' }}>
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
             <span
@@ -145,29 +144,106 @@ export default function Home() {
       </div>
 
 
+      {/* Layered wave transition INTO the light Journey island */}
+      <div aria-hidden className="relative h-32 md:h-44 bg-surface-primary overflow-hidden">
+        {/* Soft teal halo above the wave crest */}
+        <div className="absolute inset-x-0 bottom-8 h-24 bg-brand-teal/[0.05] blur-3xl" />
+        {/* Tiny floating dots */}
+        <div className="absolute top-6 left-[15%] w-1 h-1 rounded-full bg-brand-teal/40 animate-float" />
+        <div className="absolute top-10 right-[22%] w-1.5 h-1.5 rounded-full bg-brand-teal/30 animate-float-slow" />
+        <div className="absolute top-14 left-[42%] w-1 h-1 rounded-full bg-brand-purple/40 animate-float-reverse" />
+        {/* Layered organic curves */}
+        <svg
+          viewBox="0 0 1440 180"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 w-full h-full"
+        >
+          <path
+            d="M0,110 C240,60 480,150 720,100 C960,50 1200,140 1440,90 L1440,180 L0,180 Z"
+            fill="#F7F4EE"
+            fillOpacity="0.12"
+          />
+          <path
+            d="M0,135 C320,95 640,165 960,120 C1200,85 1320,150 1440,115 L1440,180 L0,180 Z"
+            fill="#F7F4EE"
+            fillOpacity="0.35"
+          />
+          <path
+            d="M0,150 C220,120 520,175 800,145 C1080,115 1280,160 1440,135 L1440,180 L0,180 Z"
+            fill="#F7F4EE"
+          />
+        </svg>
+        {/* Teal accent hairline following the wave crest */}
+        <svg
+          viewBox="0 0 1440 180"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 w-full h-full pointer-events-none"
+        >
+          <path
+            d="M0,150 C220,120 520,175 800,145 C1080,115 1280,160 1440,135"
+            stroke="#87C6C7"
+            strokeOpacity="0.45"
+            strokeWidth="1.5"
+            fill="none"
+          />
+        </svg>
+      </div>
+
       {/* 7. Journey */}
       <div id="journey">
         <JourneySection />
       </div>
 
+      {/* Layered wave transition OUT of the light Journey island */}
+      <div aria-hidden className="relative h-32 md:h-44 bg-[#F7F4EE] overflow-hidden">
+        {/* Soft teal halo below the wave dip */}
+        <div className="absolute inset-x-0 top-8 h-24 bg-brand-teal/[0.08] blur-3xl" />
+        {/* Tiny floating dots */}
+        <div className="absolute bottom-6 right-[18%] w-1 h-1 rounded-full bg-brand-purple/40 animate-float" />
+        <div className="absolute bottom-12 left-[25%] w-1.5 h-1.5 rounded-full bg-brand-teal/50 animate-float-slow" />
+        <div className="absolute bottom-16 right-[48%] w-1 h-1 rounded-full bg-brand-teal/40 animate-float-reverse" />
+        {/* Layered organic curves — mirrored */}
+        <svg
+          viewBox="0 0 1440 180"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 top-0 w-full h-full"
+          style={{ transform: 'scaleY(-1)' }}
+        >
+          <path
+            d="M0,110 C240,60 480,150 720,100 C960,50 1200,140 1440,90 L1440,180 L0,180 Z"
+            style={{ fill: 'var(--surface-primary)', fillOpacity: 0.18 }}
+          />
+          <path
+            d="M0,135 C320,95 640,165 960,120 C1200,85 1320,150 1440,115 L1440,180 L0,180 Z"
+            style={{ fill: 'var(--surface-primary)', fillOpacity: 0.45 }}
+          />
+          <path
+            d="M0,150 C220,120 520,175 800,145 C1080,115 1280,160 1440,135 L1440,180 L0,180 Z"
+            style={{ fill: 'var(--surface-primary)' }}
+          />
+        </svg>
+        {/* Teal accent hairline */}
+        <svg
+          viewBox="0 0 1440 180"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 top-0 w-full h-full pointer-events-none"
+          style={{ transform: 'scaleY(-1)' }}
+        >
+          <path
+            d="M0,150 C220,120 520,175 800,145 C1080,115 1280,160 1440,135"
+            stroke="#87C6C7"
+            strokeOpacity="0.5"
+            strokeWidth="1.5"
+            fill="none"
+          />
+        </svg>
+      </div>
+
       {/* — divider — */}
       <SwooshCurve color="teal" width={500} className="mx-auto opacity-[0.25]" />
 
-      {/* 8. Reverse marquee */}
-      <div className="relative overflow-hidden bg-surface-primary">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-l from-transparent via-brand-teal/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-l from-transparent via-brand-teal/20 to-transparent" />
-
-        <div className="py-3 md:py-4">
-          <Marquee
-            items={['إمكان المستقبل', 'Future Emkan', 'معًا نطلق إمكاناتهم', 'Together We Unlock Their Potential']}
-            speed={35}
-            separator="✦"
-            className="text-[13px] md:text-sm font-display text-brand-teal/50 dark:text-brand-teal/30"
-            reverse
-          />
-        </div>
-      </div>
+      {/* 8. Scroll-driven display stripes */}
+      <ScrollMarquee />
 
       {/* 9. Stats */}
       <div id="stats">
@@ -186,13 +262,6 @@ export default function Home() {
         <Testimonial />
       </div>
 
-      {/* — divider — */}
-      <SwooshCurve color="purple" width={500} className="mx-auto opacity-[0.25]" />
-
-      {/* 12. CTA */}
-      <div id="cta">
-        <CTABanner />
-      </div>
     </>
   );
 }

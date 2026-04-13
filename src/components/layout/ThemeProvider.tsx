@@ -17,14 +17,16 @@ export function useTheme() {
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  // Default theme is `dark` — the client wants dark purple as the primary
+  // site look. Users can still toggle to light via the navbar button.
+  const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('theme') as Theme | null;
-    if (stored) {
-      setTheme(stored);
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (stored === 'light') {
+      setTheme('light');
+    } else {
       setTheme('dark');
     }
     setMounted(true);

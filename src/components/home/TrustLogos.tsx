@@ -29,9 +29,6 @@ function LogoCard({ partner }: { partner: { name: string; abbr: string } }) {
 export default function TrustLogos() {
   return (
     <section className="py-8 sm:py-10 md:py-14 bg-surface-primary overflow-hidden relative">
-      {/* Separator lines */}
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-[var(--border-subtle)] to-transparent" />
-      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-l from-transparent via-[var(--border-subtle)] to-transparent" />
       <p className="text-center text-xs font-display font-bold text-brand-text tracking-[0.15em] mb-6 sm:mb-8">
         شركاؤنا في النجاح
       </p>

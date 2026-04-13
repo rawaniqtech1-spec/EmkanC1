@@ -352,7 +352,7 @@ function ServicesCTA() {
         <p className="text-brand-text-muted text-base md:text-lg mb-10">{content.services.cta.subtitle}</p>
         <div className="flex gap-4 justify-center flex-wrap">
           <Button href="/contact" variant="white" size="lg">{content.services.cta.button}</Button>
-          <Button href={`https://wa.me/${encodeURIComponent('+966XXXXXXXXX')}`} variant="ghost" size="lg" className="text-white border-white/20 hover:bg-white/10">واتساب</Button>
+          <Button href={content.contact.info.whatsapp} variant="ghost" size="lg" className="text-white border-white/20 hover:bg-white/10">واتساب</Button>
         </div>
       </div>
     </section>
