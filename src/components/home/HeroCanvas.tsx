@@ -231,7 +231,7 @@ export default function HeroCanvas() {
         </div>
 
         {/* ─── Chapter text overlay ────── */}
-        <div className="absolute bottom-6 md:bottom-16 left-0 right-0 z-10 px-6 md:px-12 pointer-events-none">
+        <div className="absolute bottom-8 md:bottom-16 left-0 right-0 z-10 px-6 md:px-12 pointer-events-none">
           <div className="max-w-[720px] mx-auto text-center">
             {/* Key forces remount on chapter change for a clean fade/slide */}
             <div key={activeChapter} className="animate-fade-slide-up">
@@ -255,7 +255,7 @@ export default function HeroCanvas() {
         </div>
 
         {/* ─── Progress bar at the very bottom ────────── */}
-        <div className="absolute bottom-5 md:bottom-6 left-0 right-0 z-10 pointer-events-none">
+        <div className="absolute bottom-2 md:bottom-6 left-0 right-0 z-10 pointer-events-none">
           <div className="max-w-[720px] mx-auto px-6 md:px-12">
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-display tabular-nums text-white/50">
