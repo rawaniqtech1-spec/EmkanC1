@@ -9,12 +9,29 @@ import { content } from '@/content/ar';
 import Button from '@/components/shared/Button';
 import { SoundWaveBars, SwooshCurve } from '@/components/shared/BrandDecor';
 
+// All event-only fields are optional from the union's perspective —
+// declare an item type so TS doesn't complain when we read them.
+type ArticleItem = {
+  slug: string;
+  category: 'blog' | 'events';
+  title: string;
+  excerpt: string;
+  body: string;
+  image: string;
+  date: string;
+  readTime?: string;
+  location?: string;
+  eventDate?: string;
+  eventTime?: string;
+  featured: boolean;
+};
+
 export default function ArticleDetailPage() {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug;
   const ref = useRef<HTMLElement>(null);
 
-  const allItems = content.articles.items;
+  const allItems = content.articles.items as readonly ArticleItem[];
   const article = allItems.find((a) => a.slug === slug);
 
   // ── Scroll to top on every article navigation ──

@@ -17,7 +17,23 @@ if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
 const Scene3D = dynamic(() => import('@/components/articles/Scene3D'), { ssr: false });
 
-const articles = content.articles.items;
+// Item type — covers both blog and event articles with optional event fields.
+type ArticleItem = {
+  slug: string;
+  category: 'blog' | 'events';
+  title: string;
+  excerpt: string;
+  body: string;
+  image: string;
+  date: string;
+  readTime?: string;
+  location?: string;
+  eventDate?: string;
+  eventTime?: string;
+  featured: boolean;
+};
+
+const articles = content.articles.items as readonly ArticleItem[];
 const t = content.articles;
 const blogArticles = articles.filter(a => a.category === 'blog');
 const eventArticles = articles.filter(a => a.category === 'events');
@@ -43,7 +59,8 @@ export default function ArticlesPage() {
   const mainRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!mainRef.current) return;
+    const root = mainRef.current;
+    if (!root) return;
 
     const timer = setTimeout(() => {
       const ctx = gsap.context(() => {
@@ -111,7 +128,7 @@ export default function ArticlesPage() {
         }
 
         ScrollTrigger.refresh();
-      }, mainRef.current);
+      }, root);
 
       return () => ctx.revert();
     }, 200);
