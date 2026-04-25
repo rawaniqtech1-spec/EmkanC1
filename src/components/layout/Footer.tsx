@@ -431,10 +431,6 @@ export default function Footer() {
           <p className="text-[11px] text-white/30">
             {content.footer.copyright}
           </p>
-          <p className="text-[11px] text-white/40 flex items-center gap-2">
-            صُنع بحب في تبوك
-            <span className="text-brand-teal text-sm leading-none">♡</span>
-          </p>
         </div>
       </div>
     </footer>
