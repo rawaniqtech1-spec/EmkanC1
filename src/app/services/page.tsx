@@ -167,7 +167,7 @@ function ServiceItem({ service, index }: { service: typeof content.services.item
             <div className="w-12 h-12 rounded-xl bg-brand-teal/10 border border-brand-teal/20 flex items-center justify-center text-brand-teal">
               <Icon size={26} />
             </div>
-            <span className="text-xs text-brand-teal font-bold">الخدمة ٠{index + 1}</span>
+            <span className="text-xs text-brand-teal font-bold">الخدمة {`٠${index + 1}`.replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)])}</span>
           </div>
 
           <h3 className="font-display font-bold text-xl md:text-3xl text-brand-text mb-4 leading-tight">{service.title}</h3>

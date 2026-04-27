@@ -126,15 +126,15 @@ const jsonLd = {
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
-      opens: '08:00',
-      closes: '20:00',
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday'],
+      opens: '09:00',
+      closes: '12:00',
     },
     {
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: 'Saturday',
-      opens: '09:00',
-      closes: '17:00',
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Saturday'],
+      opens: '16:00',
+      closes: '22:00',
     },
   ],
   sameAs: [
@@ -187,7 +187,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-x-clip">{children}</main>
             <Footer />
             <ScrollToTop />
-            <WhatsAppButton href="https://wa.me/message/W5KUC55DRXQHG1" />
+            <WhatsAppButton href={content.contact.info.whatsapp} />
           </LenisProvider>
         </ThemeProvider>
       </body>
