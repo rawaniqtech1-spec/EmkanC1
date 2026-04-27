@@ -78,7 +78,7 @@ export default function ArticleDetailPage() {
   return (
     <article ref={ref} className="bg-surface-primary min-h-screen">
       {/* ═══════════ HERO IMAGE ═══════════ */}
-      <div className="detail-el relative w-full aspect-[3/2] sm:aspect-[16/8] md:aspect-[16/6] overflow-hidden">
+      <div className="detail-el relative w-full min-h-[480px] sm:min-h-0 aspect-[3/2] sm:aspect-[16/8] md:aspect-[16/6] overflow-hidden">
         <Image
           src={article.image}
           alt={article.title}
@@ -90,21 +90,18 @@ export default function ArticleDetailPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1E1535] via-[#1E1535]/60 to-[#1E1535]/20" />
 
-        {/* Back link */}
-        <div className="absolute top-20 md:top-24 right-4 md:right-12 z-[2]">
-          <Link
-            href="/articles"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm hover:bg-white/20 transition-colors duration-300 min-h-[44px]"
-          >
-            <span>→</span>
-            <span>{t.backLink}</span>
-          </Link>
-        </div>
-
         {/* Title overlay */}
-        <div className="absolute inset-x-0 bottom-0 z-[2] px-5 md:px-12 pb-10 md:pb-14">
+        <div className="absolute inset-x-0 bottom-0 z-[2] px-5 md:px-12 pb-8 md:pb-14">
           <div className="max-w-[820px] mx-auto">
-            <span className="detail-el inline-block px-4 py-1.5 rounded-full text-xs font-medium bg-brand-teal/90 text-white backdrop-blur-sm mb-4">
+            <Link
+              href="/articles"
+              className="detail-el hidden sm:flex w-fit items-center gap-1.5 text-white/70 hover:text-white text-xs md:text-sm mb-3 md:mb-4 transition-colors duration-300"
+            >
+              <span>→</span>
+              <span>{t.backLink}</span>
+            </Link>
+
+            <span className="detail-el inline-block px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-brand-teal/90 text-white backdrop-blur-sm mb-3 md:mb-4">
               {isEvent ? 'فعاليات' : 'المدونة'}
             </span>
 
